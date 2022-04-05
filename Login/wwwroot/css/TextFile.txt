@@ -1,0 +1,102 @@
+﻿services.AddAuthentication("CookieAuthentication")
+                .AddCookie("CookieAuthentication", options =>
+                 {
+                     options.AccessDeniedPath = "/Login/Ops/";
+                     options.LoginPath = "/Login/Entrar/";
+                 });
+
+
+
+                 app.UseAuthentication();
+            app.UseAuthorization();
+
+
+
+            Install-Package Microsoft.AspNetCore.Authentication.Cookies -Version 2.2.0
+
+
+            using Microsoft.AspNetCore.Authorization;
+
+            [authorize]
+
+
+
+
+              public IActionResult Entrar(string returnUrl)
+        {
+            if (HttpContext.User.Claims.Count() >= 1)
+            {
+                if (string.IsNullOrEmpty(returnUrl))
+                {
+                    return Redirect("/");
+                }
+                else
+                {
+                    return Redirect(returnUrl);
+                }
+            }
+
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                ViewData["ReturnUrl"] = "/";
+            }
+            else
+            {
+                ViewData["ReturnUrl"] = returnUrl;
+            }
+
+            return View(new Usuario());
+        }
+
+
+
+         var claims = new List<Claim>();
+                    claims.Add(new Claim(ClaimTypes.Name, usuarioLogado.Nome));
+                    claims.Add(new Claim(ClaimTypes.Sid, usuarioLogado.UsuarioId.ToString()));
+
+
+                      var userIdentity = new ClaimsIdentity(claims, "Acesso");
+
+                    ClaimsPrincipal principal = new ClaimsPrincipal(userIdentity);
+                    await HttpContext.SignInAsync("CookieAuthentication", principal, new AuthenticationProperties
+                    {
+                        ExpiresUtc = new DateTimeOffset(DateTime.Now.AddHours(db.CONFIG.FirstOrDefault().tempoDuracaoCookie)),
+                        IsPersistent = true
+
+                    }); ;
+
+                    //Just redirect to our index after logging in. 
+                    return Redirect(RedirectUrl);
+
+
+
+                     public async Task<IActionResult> Logoff()
+        {
+            await HttpContext.SignOutAsync("CookieAuthentication");
+            ViewData["ReturnUrl"] = "/";
+            return Redirect("/Login/Entrar");
+        }
+
+         @if (User.IsInRole("AcessarCursos"))
+                            {
+                                <li><a href="~/Cursos/Index/">Cursos</a></li>
+                            }
+
+
+
+           <ul class="navbar-nav ms-auto text-white">
+                        <li class="nav-item dropdown">
+                            @{
+                                var claimsIdentity = User.Identity as System.Security.Claims.ClaimsIdentity;
+
+                                var Nome = claimsIdentity.FindFirst(System.Security.Claims.ClaimTypes.Name).Value;
+                            }
+                            <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Bem vindo @Nome  </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="~/Home/AlterarSenha">Alterar Senha</a></li>
+                                <li><a class="dropdown-item" href="~/Login/Logoff/"><i class="fa fas"></i>Sair do sistema</a></li>
+
+                            </ul>
+                        </li>
+
+                    </ul>
